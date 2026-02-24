@@ -3,3 +3,9 @@ include/*
 .vscode/*
 .cache/*
 lib/*
+.idea/*
+*.log
+*diag*png
+cmake-build-debug/*
+cmake-build-release/*
+*.cache

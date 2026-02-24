@@ -24,7 +24,7 @@ package "dc (controller)" {
 		@startuml
 		title Model / Resources / View / Controller interactions
 
-		package "dm (model)" {
+		package "dm (model)" as dm {
 			class Model {
 				- gs settings
 				- wad::WADFile *wad
@@ -45,7 +45,7 @@ package "dc (controller)" {
 			}
 		}
 
-		package "wad (resources/wad)" {
+		package "wad (resources/wad)" as wad {
 			class WADFile {
 				+ ReadWad(path : string)
 				+ ReadMap(name : string)
@@ -56,7 +56,7 @@ package "dc (controller)" {
 			class LINEDEF
 		}
 
-		package "dc (controller)" {
+		package "dc (controller)" as dc {
 			class Controller {
 				- dm::Model *model
 				- int x_min
@@ -74,7 +74,7 @@ package "dc (controller)" {
 			}
 		}
 
-		package "dv (view)" {
+		package "dv (view)" as dv {
 			class View {
 				- controller : dc::Controller*
 				- gameState : GameState
@@ -99,6 +99,10 @@ package "dc (controller)" {
 			}
 		}
 
+		' Positioning: force the `dv` package under the others
+		dm -down-> dv
+		wad -down-> dv
+		dc -down-> dv
 		' Interactions
 		main --> View : creates
 		View --> Controller : creates/owns
