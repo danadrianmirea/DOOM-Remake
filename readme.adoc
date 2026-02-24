@@ -1,0 +1,127 @@
+// Controller module class dependency diagram (PlantUML)
+
+[plantuml]
+----
+@startuml
+title Controller module and main interactions
+
+package "dc (controller)" {
+	class Controller {
+		- dm::Model *model
+		- int x_min
+		- int x_max
+		- int y_min
+		- int y_max
+		+ Controller()
+		+ ~Controller()
+		+ GetScreenWidth()
+		+ GetScreenHeight()
+		+ GetMaxFPS()
+		// Expanded class dependency diagram (PlantUML)
+
+		[plantuml]
+		----
+		@startuml
+		title Model / Resources / View / Controller interactions
+
+		package "dm (model)" {
+			class Model {
+				- gs settings
+				- wad::WADFile *wad
+				+ Model()
+				+ ~Model()
+				+ SelectWad(wadName : string)
+				+ SelectMap(mapName : string)
+				+ GetScreenWidth() : int
+				+ GetScreenHeight() : int
+				+ GetMaxFPS() : int
+				+ GetMapVertexes() : List<wad::VERTEX>
+				+ GetMapLinedefs() : List<wad::LINEDEF>
+			}
+			class Settings <<enumeration>> {
+				+ WIN_W
+				+ WIN_H
+				+ FPS
+			}
+		}
+
+		package "wad (resources/wad)" {
+			class WADFile {
+				+ ReadWad(path : string)
+				+ ReadMap(name : string)
+				+ GetVertexes() : List<VERTEX>
+				+ GetLinedefs() : List<LINEDEF>
+			}
+			class VERTEX
+			class LINEDEF
+		}
+
+		package "dc (controller)" {
+			class Controller {
+				- dm::Model *model
+				- int x_min
+				- int x_max
+				- int y_min
+				- int y_max
+				+ Controller()
+				+ ~Controller()
+				+ GetScreenWidth() : int
+				+ GetScreenHeight() : int
+				+ GetMaxFPS() : int
+				+ SelectMap(mapName : string)
+				+ map_vertexes_2D : List<wad::VERTEX>
+				+ map_linedefs_2D : List<wad::LINEDEF>
+			}
+		}
+
+		package "dv (view)" {
+			class View {
+				- controller : dc::Controller*
+				- gameState : GameState
+				+ View()
+				+ ~View()
+				+ runGame()
+				+ setGameState(gs : GameState)
+				+ getController() : dc::Controller*
+			}
+
+			class MapTest {
+				- view : View*
+				- mapLoaded : bool
+				+ draw()
+				+ update()
+			}
+
+			class MainMenu {
+				- view : View*
+				+ draw()
+				+ update()
+			}
+		}
+
+		' Interactions
+		main --> View : creates
+		View --> Controller : creates/owns
+		Controller --> Model : owns / queries
+		Model --> WADFile : creates/owns
+		WADFile --> VERTEX : provides
+		WADFile --> LINEDEF : provides
+		Controller ..> VERTEX : stores (map_vertexes_2D)
+		Controller ..> LINEDEF : stores (map_linedefs_2D)S
+		MapTest --> View : has reference
+		MapTest --> Controller : uses (reads map_vertexes_2D/map_linedefs_2D)
+		MapTest -> Controller : SelectMap(mapName)
+		MainMenu --> View : has reference
+		MainMenu -> View : setGameState(MAP_TESTING)
+		View -> Controller : GetScreenWidth/Height/GetMaxFPS used during InitWindow/SetTargetFPS
+		Controller -> Model : GetMapVertexes/GetMapLinedefs when remapping
+		Model -> WADFile : ReadWad/ReadMap when selecting wad/map
+
+		note left of Controller
+		Controller remaps model vertex coordinates to 2D screen coordinates
+		end note
+
+		@enduml
+		----
+
+		Notes: This diagram covers classes in `src/model`, `src/view`, and `src/controller` and their interactions with the WAD-based resources. The `wad` package is represented abstractly (WAD file, vertex and linedef types).
